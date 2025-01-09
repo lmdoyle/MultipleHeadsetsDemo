@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>Multiple Headsets Demo</title>
+		<style>
+			body { margin: 0; }
+		</style>
+	</head>
+	<body>
+        <script type="importmap">
+            {
+              "imports": {
+                "three": "https://cdn.jsdelivr.net/npm/three@0.172.0/build/three.module.js",
+                "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.172.0/examples/jsm/"
+              }
+            }
+          </script>
+         
+         
+		<script type="module">
+            import * as THREE from 'three';
+            import WebGL from 'three/addons/capabilities/WebGL.js';
+            import { VRButton } from 'three/addons/webxr/VRButton.js';
+            import { ARButton } from 'three/addons/webxr/ARButton.js';
+
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+            
+            //set up the camera and scene renderer and enable AR and the ARButton 
+            const renderer = new THREE.WebGLRenderer();
+            renderer.setSize( window.innerWidth, window.innerHeight );
+            document.body.appendChild( renderer.domElement );
+            document.body.appendChild( ARButton.createButton( renderer ) );
+            renderer.xr.enabled = true;
+
+            //define and add controllers 1 to the scene
+            const controller1 = renderer.xr.getController(0); // First controller (index 0)
+            controller1.addEventListener( 'selectstart', placeCube1 );
+            scene.add(controller1);
+            //define and add controller 2 to the scene
+            const controller2 = renderer.xr.getController(1); // First controller (index 0)
+            controller2.addEventListener( 'selectstart', placeCube2 );
+            scene.add(controller2);
+
+            //create and add controller mesh 1
+            const geometryC1 = new THREE.SphereGeometry(0.05, 32, 32); // Small sphere
+            const materialC1 = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red
+            const controllerMesh1 = new THREE.Mesh(geometryC1, materialC1);
+            controller1.add(controllerMesh1);
+
+            //create and add controller mesh 2
+            const geometryC2 = new THREE.SphereGeometry(0.05, 32, 32); // Small sphere
+            const materialC2 = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+            const controllerMesh2 = new THREE.Mesh(geometryC2, materialC2);
+            controller2.add(controllerMesh2);
+
+            //place cube function for controller 1
+           function placeCube1(){
+            //logs the controller 1 position
+            const position = new THREE.Vector3();
+            controller1.getWorldPosition(position);
+            console.log('Cube Position by Controller 1 at:', "x: " , position.x.toFixed(2), "y: ", position.y.toFixed(2), "z: " , position.z.toFixed(2));
+
+            //adds a box at the controller 1 coordinate
+            const geometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
+            const material = new THREE.MeshBasicMaterial( { color: 0xFF3200 } );
+            const cube = new THREE.Mesh( geometry, material );
+            scene.add( cube );
+            cube.position.set(position.x, position.y, position.z);
+           }
+
+           //place cube function for controller 2
+           function placeCube2(){
+            //logs the controller 2 position
+            const position = new THREE.Vector3();
+            controller2.getWorldPosition(position);
+            console.log('Cube Position by Controller 2 at:', "x: " , position.x.toFixed(2), "y: ", position.y.toFixed(2), "z: " , position.z.toFixed(2));
+
+             //adds a box at the controller 1 coordinate
+            const geometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
+            const material = new THREE.MeshBasicMaterial( { color: 0x0093FF } );
+            const cube = new THREE.Mesh( geometry, material );
+            scene.add( cube );
+            cube.position.set(position.x, position.y, position.z);
+           }
+
+            camera.position.z = 5;
+
+            renderer.setAnimationLoop( function () {
+
+                //console.log(cube.material.color.b); 
+
+                let xrCamera; 
+                if (renderer.xr.isPresenting === true) { 
+
+                    //makes it so that the camera is housed in a variable
+                    const cameraVector = new THREE.Vector3();
+                    xrCamera = renderer.xr.getCamera(camera); 
+
+                    
+                    
+                    //logs the headset position
+                    //console.log("x: " + xrCamera.getWorldDirection(cameraVector).x.toFixed(2) + 
+                     //           " y: " + xrCamera.getWorldDirection(cameraVector).y.toFixed(2) + 
+                     //           " z: " + xrCamera.getWorldDirection(cameraVector).z.toFixed(2)); 
+                    
+                }
+
+                //cube.rotation.x += 0.01;
+                //cube.rotation.y += 0.01;
+                renderer.render( scene, camera );
+
+            } );
+
+        </script>
+        <h1>Welcome to the multiple headsets demo!</h1>
+        <p>Click the button below to enter AR and see the </p>
+	</body>
+</html>
