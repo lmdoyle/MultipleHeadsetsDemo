@@ -16,6 +16,7 @@
               }
             }
           </script>
+          <script src="https://cdn.jsdelivr.net/npm/@croquet/croquet@1.1.0"></script>
          
          
 		<script type="module">
@@ -24,72 +25,242 @@
             import { VRButton } from 'three/addons/webxr/VRButton.js';
             import { ARButton } from 'three/addons/webxr/ARButton.js';
 
+            //sets up the scenes
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-            
-            //set up the camera and scene renderer and enable AR and the ARButton 
+
+            //sets up the rendered and enables XR
             const renderer = new THREE.WebGLRenderer();
             renderer.setSize( window.innerWidth, window.innerHeight );
             document.body.appendChild( renderer.domElement );
             document.body.appendChild( ARButton.createButton( renderer ) );
             renderer.xr.enabled = true;
 
-            //define and add controllers 1 to the scene
-            const controller1 = renderer.xr.getController(0); // First controller (index 0)
-            controller1.addEventListener( 'selectstart', placeCube1 );
-            scene.add(controller1);
-            //define and add controller 2 to the scene
-            const controller2 = renderer.xr.getController(1); // First controller (index 0)
-            controller2.addEventListener( 'selectstart', placeCube2 );
-            scene.add(controller2);
+            //defines the variables for the coordinates of controller 1 on button pressed
+            let pos1x;
+            let pos1y;
+            let pos1z;
+            //defines the variables for the coordinates of controller 2 on button pressed
+            let pos2x;
+            let pos2y;
+            let pos2z;
 
-            //create and add controller mesh 1
+            //defines the controller and the controller grip of controller 1
+            const controller1 = renderer.xr.getController(0);
+            const controller1Grip = renderer.xr.getControllerGrip(0);
+
+            //adds controller1 and controller grip 1 to the scene
+            scene.add(controller1);
+            scene.add(controller1Grip)
+
+            //defines the controller and the controller grip of controller 2
+            const controller2 = renderer.xr.getController(1); 
+            const controller2Grip = renderer.xr.getControllerGrip(1);
+
+            //adds controller1 and controller grip 1 to the scene
+            scene.add(controller2);
+            scene.add(controller2Grip);
+
+           
+	
+
+            
+
+
+            //the croquet model
+            class MyModel extends Croquet.Model {
+                    init() {
+                    //logs to the console that the model has been initiated
+                    console.log("The Croquet model has been initiated");
+
+                    //all of the subscribes for the events from the model
+                    this.subscribe("controllerPress", '1x', this.onex);
+                    this.subscribe("controllerPress", "1y", this.oney);
+                    this.subscribe("controllerPress", "1z", this.onez);
+                    this.subscribe("controllerPress", "1", this.controller1Press);
+
+                    this.subscribe("controllerPress", '2x', this.twox);
+                    this.subscribe("controllerPress", "2y", this.twoy);
+                    this.subscribe("controllerPress", "2z", this.twoz);
+                    this.subscribe("controllerPress", '2', this.controller2Press);
+
+                    this.subscribe("controllerPress", "grip", this.controllerGrip);
+                }
+
+                //the controller grip function
+                controllerGrip(){
+
+                    //removes everything from the scene so the user can start from a blank slate
+                    scene.remove.apply(scene, scene.children);
+                
+                    //adds the controllers back in the scene so that the user can see where they are
+                    scene.add(controller1);
+                    scene.add(controller2);
+
+                    //creates a new controller mesh for the first controller
+                    const geometryC1 = new THREE.SphereGeometry(0.05, 32, 32); // Small sphere
+                    const materialC1 = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red
+                    const controllerMesh1 = new THREE.Mesh(geometryC1, materialC1);
+                    controller1.add(controllerMesh1);
+
+                    //create s anew controller mesh for the second controller
+                    const geometryC2 = new THREE.SphereGeometry(0.05, 32, 32); // Small sphere
+                    const materialC2 = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
+                    const controllerMesh2 = new THREE.Mesh(geometryC2, materialC2);
+                    controller2.add(controllerMesh2);
+                }
+
+                //this function sets the x posotion of the first controller
+                onex(pos){
+                    pos1x = pos;
+                }
+
+                //this function sets the y posiition of the first controller
+                oney(pos){
+                    pos1y = pos;
+                }
+
+                //this function sets the z position of the first controller
+                onez(pos){
+                    pos1z = pos;
+                }
+
+                //this function sets the x positon of the secont controller
+                twox(pos){
+                    pos2x = pos;
+                }
+
+                //this function sets the y position of the second controller
+                twoy(pos){
+                    pos2y = pos;
+                }
+
+                //this function sets the z positon of the second controller
+                twoz(pos){
+                    pos2z = pos;
+                }
+
+                //this function creates a cube at the position of the controller
+                controller2Press(){
+
+                    //creates a vector of the position and then logs it to the console
+                    const position = new THREE.Vector3(pos2x,pos2y,pos2z);
+                    console.log(position);
+
+                    //creates a cube and then sets the position to be the position of the controller
+                    const geometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
+                    const material = new THREE.MeshBasicMaterial( { color: 0x0093FF } );
+                    const cube = new THREE.Mesh( geometry, material );
+                    scene.add( cube );
+                    cube.position.set(position.x, position.y, position.z);
+                }
+
+                //this function creaters a cube at the position of the controller
+                controller1Press(){
+                    //creates a vector of the position and then lgos it to the console
+                    const position = new THREE.Vector3(pos1x,pos1y,pos1z);
+                    console.log(position);
+
+                    //creates a cube and sets the positoin to be the posotion of the controller
+                    const geometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
+                    const material = new THREE.MeshBasicMaterial( { color: 0xFF3200 } );
+                    const cube = new THREE.Mesh( geometry, material );
+                    scene.add( cube );
+                    cube.position.set(position.x, position.y, position.z);
+                }
+            }
+
+            //registers the model
+            MyModel.register("MyModel");
+
+            //the croquet model
+            class MyView extends Croquet.View {
+                constructor(model) {
+                    super(model);
+
+                    //the trigger click function for controler one
+                    controller1.addEventListener('selectstart', () => {
+                        //creates an empty vector3
+                        const position = new THREE.Vector3();
+                        //puts the position coordinates into the empty vector 3
+                        controller1.getWorldPosition(position);
+                        //published the event with the data
+                        //note: cannot push a vector 3 through a publish event so had to split into seperate scopes
+                        this.publish('controllerPress', '1x', position.x);
+                        this.publish('controllerPress', '1y', position.y);
+                        this.publish('controllerPress', '1z', position.z);
+                        //sends a signal with no data just saying that the controler was pressed
+                        this.publish('controllerPress', '1');
+                    })
+
+                    //the trigger click function for controller 2
+                    controller2.addEventListener('selectstart', () => {
+                        //creates an empty vector3
+                        const position = new THREE.Vector3();
+                        //puts the position coordinates of the controller into the empty vector 3
+                        controller2.getWorldPosition(position);
+                        //publishes the event with the data for the position
+                        this.publish('controllerPress', '2x', position.x);
+                        this.publish('controllerPress', '2y', position.y);
+                        this.publish('controllerPress', '2z', position.z);
+                        //publishes an event with no data that the trigger has been pressed
+                        this.publish('controllerPress', '2');
+                    })
+
+                    //the on click funciton for controller 1 grip. Publishes the controller press event with scope of grip
+                    controller1Grip.addEventListener('squeezestart', () => {
+                        this.publish("controllerPress", "grip");
+                    });
+
+                    //the on click funciton for controller 1 grip. Publishes the controller press event with scope of grip
+                    controller2Grip.addEventListener('squeezestart', () => {
+                        this.publish("controllerPress", "grip");
+                    });
+
+                    
+
+                   
+                    
+                }
+
+                //the update funciton that updates every frame. Not in use for this project
+                update(time) {
+                    
+                }
+
+                
+
+
+            }
+
+            //the code to join the croquet session with a development key
+            Croquet.Session.join({
+                apiKey: '1BnN4MOyI2yEFd0lIzuGNaJjoPGB9e2djtPutg8lx',
+                appId: 'com.gmail.leodoyle05.myapp',
+                sessionName: 'multipleHeadset',
+                password: "Test",
+                model: MyModel,
+                view: MyView
+            });
+
+
+            //create and add controller mesh 1 at the start
             const geometryC1 = new THREE.SphereGeometry(0.05, 32, 32); // Small sphere
             const materialC1 = new THREE.MeshBasicMaterial({ color: 0xff0000 }); // Red
             const controllerMesh1 = new THREE.Mesh(geometryC1, materialC1);
             controller1.add(controllerMesh1);
 
-            //create and add controller mesh 2
+            //create and add controller mesh 2 at the start
             const geometryC2 = new THREE.SphereGeometry(0.05, 32, 32); // Small sphere
             const materialC2 = new THREE.MeshBasicMaterial({ color: 0x0000ff }); // Blue
             const controllerMesh2 = new THREE.Mesh(geometryC2, materialC2);
             controller2.add(controllerMesh2);
 
-            //place cube function for controller 1
-           function placeCube1(){
-            //logs the controller 1 position
-            const position = new THREE.Vector3();
-            controller1.getWorldPosition(position);
-            console.log('Cube Position by Controller 1 at:', "x: " , position.x.toFixed(2), "y: ", position.y.toFixed(2), "z: " , position.z.toFixed(2));
-
-            //adds a box at the controller 1 coordinate
-            const geometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
-            const material = new THREE.MeshBasicMaterial( { color: 0xFF3200 } );
-            const cube = new THREE.Mesh( geometry, material );
-            scene.add( cube );
-            cube.position.set(position.x, position.y, position.z);
-           }
-
-           //place cube function for controller 2
-           function placeCube2(){
-            //logs the controller 2 position
-            const position = new THREE.Vector3();
-            controller2.getWorldPosition(position);
-            console.log('Cube Position by Controller 2 at:', "x: " , position.x.toFixed(2), "y: ", position.y.toFixed(2), "z: " , position.z.toFixed(2));
-
-             //adds a box at the controller 1 coordinate
-            const geometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
-            const material = new THREE.MeshBasicMaterial( { color: 0x0093FF } );
-            const cube = new THREE.Mesh( geometry, material );
-            scene.add( cube );
-            cube.position.set(position.x, position.y, position.z);
-           }
-
+            //sets the camera position far back on the z axis
             camera.position.z = 5;
 
+            //the animation loop
             renderer.setAnimationLoop( function () {
-
-                //console.log(cube.material.color.b); 
 
                 let xrCamera; 
                 if (renderer.xr.isPresenting === true) { 
@@ -97,18 +268,9 @@
                     //makes it so that the camera is housed in a variable
                     const cameraVector = new THREE.Vector3();
                     xrCamera = renderer.xr.getCamera(camera); 
-
-                    
-                    
-                    //logs the headset position
-                    //console.log("x: " + xrCamera.getWorldDirection(cameraVector).x.toFixed(2) + 
-                     //           " y: " + xrCamera.getWorldDirection(cameraVector).y.toFixed(2) + 
-                     //           " z: " + xrCamera.getWorldDirection(cameraVector).z.toFixed(2)); 
-                    
                 }
 
-                //cube.rotation.x += 0.01;
-                //cube.rotation.y += 0.01;
+                //renders the camera
                 renderer.render( scene, camera );
 
             } );
