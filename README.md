@@ -5,6 +5,7 @@ The webstite, linked above, works by entering AR, and then when you press the tr
 The position of the cube is then printed in the console. The grip button of the VR controller clears the cubes
 
 _update as of 1/17/25_
+
 There is now a label on the cube so that the user can see the position of the cube without checking the console
 
 **How to get it working on a cell phone**
