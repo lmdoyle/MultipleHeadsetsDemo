@@ -4,6 +4,9 @@ This is a demo-proof of concept system of a system so that multiple headsets can
 The webstite, linked above, works by entering AR, and then when you press the trigger button on the controller, it places a cube.
 The position of the cube is then printed in the console. The grip button of the VR controller clears the cubes
 
+_update as of 1/17/25_
+There is now a label on the cube so that the user can see the position of the cube without checking the console
+
 **How to get it working on a cell phone**
 Depending on the android phone, it may be possible to enable it directly from the website. For the sake of being able to test, there are special
 instructions to be able to use on an IPhone.
