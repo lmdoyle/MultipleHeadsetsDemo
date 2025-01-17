@@ -3,10 +3,8 @@
 	<head>
 		<meta charset="utf-8">
 		<title>Multiple Headsets Demo</title>
-		<style>
-			body { margin: 0; }
-		</style>
 	</head>
+    <link rel="stylesheet" href="styles.css">
 	<body>
         <script type="importmap">
             {
@@ -24,9 +22,12 @@
             import WebGL from 'three/addons/capabilities/WebGL.js';
             import { VRButton } from 'three/addons/webxr/VRButton.js';
             import { ARButton } from 'three/addons/webxr/ARButton.js';
+            import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
+            import { FontLoader } from 'three/addons/loaders/FontLoader.js';
 
             //sets up the scenes
             const scene = new THREE.Scene();
+            scene.background = new THREE.Color(0xffffff);
             const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
             //sets up the rendered and enables XR
@@ -44,6 +45,11 @@
             let pos2x;
             let pos2y;
             let pos2z;
+
+            const loader = new FontLoader();
+
+            let geometry;
+            let i = 1;
 
             //defines the controller and the controller grip of controller 1
             const controller1 = renderer.xr.getController(0);
@@ -89,7 +95,6 @@
 
                 //the controller grip function
                 controllerGrip(){
-
                     //removes everything from the scene so the user can start from a blank slate
                     scene.remove.apply(scene, scene.children);
                 
@@ -147,6 +152,31 @@
                     const position = new THREE.Vector3(pos2x,pos2y,pos2z);
                     console.log(position);
 
+                    //loads a text object with the cube's position
+                    loader.load('fonts/JanuaryNightRegular.json', function (font) {
+                    const geometry = new TextGeometry('(' + position.x.toFixed(2) + "," + position.y.toFixed(2) + "," + position.z.toFixed(2) + ')', {
+                        font: font,
+                        size: 0.05,
+                        height: 0.1,
+                        depth: 0.01,
+                        curveSegments: 12,
+                        bevelEnabled: false,
+                        bevelThickness: 0.1,
+                        bevelSize: 0.1,
+                        bevelOffset: 0,
+                        bevelSegments: 5,
+                    })
+
+                    //sets the color to black, adds it to the scene, set's it's name to be text and whatever number cube we're on,
+                    //then sets the position to just above the cube
+                    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    scene.add(mesh);
+                    mesh.name = "Text" + i;
+                    i++;
+                    mesh.position.set(position.x, position.y + 0.25, position.z);
+                        });
+
                     //creates a cube and then sets the position to be the position of the controller
                     const geometry = new THREE.BoxGeometry( 0.25, 0.25, 0.25 );
                     const material = new THREE.MeshBasicMaterial( { color: 0x0093FF } );
@@ -157,6 +187,31 @@
 
                 //this function creaters a cube at the position of the controller
                 controller1Press(){
+
+                    //creates a text object that contains the position of the cube
+                    loader.load('fonts/JanuaryNightRegular.json', function (font) {
+                    const geometry = new TextGeometry('(' + position.x.toFixed(2) + "," + position.y.toFixed(2) + "," + position.z.toFixed(2) + ')', {
+                        font: font,
+                        size: 0.05,
+                        height: 0.1,
+                        depth: 0.01,
+                        curveSegments: 12,
+                        bevelEnabled: false,
+                        bevelThickness: 0.1,
+                        bevelSize: 0.1,
+                        bevelOffset: 0,
+                        bevelSegments: 5,
+                    })
+
+                    //sets the color to black, adds it to the scene, sets the name, and position to above the cube
+                    const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                    const mesh = new THREE.Mesh(geometry, material);
+                    scene.add(mesh);
+                    mesh.name = "Text" + i;
+                    i++;
+                    mesh.position.set(position.x, position.y + 0.25, position.z);
+                        });
+
                     //creates a vector of the position and then lgos it to the console
                     const position = new THREE.Vector3(pos1x,pos1y,pos1z);
                     console.log(position);
@@ -273,12 +328,22 @@
                 //renders the camera
                 renderer.render( scene, camera );
 
+                //iterates through the objects in the scene, finds the text object, and has it look at the camera. 
+                scene.children.forEach((child) => {
+                        if (child.name.includes("Text")) {
+                            console.log("Found object:", child.name); 
+                            child.lookAt(camera.position); 
+                        }
+                    });
+
+
+
             } );
 
         </script>
-        <h1>Welcome to the multiple headsets demo!</h1>
-        <h2>Click the button below to enter AR and see the </h2>
-        <p>Once in AR, click the trigger button on the controller to place the cube</p>
-        <p>Then, check the console logs for the coordinates of the cube</p>
+        <h1><span class="span1">Welcome to the multiple headsets demo!</span></h1>
+        <h2><span class="span2">Click the button below to enter AR and see the demo!</span> </h2>
+        <p><span class="span3">Once in AR, click the trigger button on the controller to place the cube</span></p>
+        <p><span class="span3">Then, check the console logs for the coordinates of the cube, or look just above the cube for a label</span></p>
 	</body>
 </html>
